@@ -1,0 +1,36 @@
+experiment: null
+seed: 42
+diffuser:
+  noise_level: 0.001
+  gamma: 0.0
+  jitter: 0.00
+model_update:
+  num_kinematic: 512
+  num_normal: 1536
+  proximity_radius: 2.0
+  solver: euler
+  use_fps_sampling: false
+steps: 200
+split: "test"
+start_state: 0
+max_velocity: null
+trajectory:
+  trajectory_idx: 9
+  num_normal: null
+renderer:
+  _target_: src.render.clot_renderer.clot_renderer
+  render_gt: true
+  params:
+    interval: 50
+    max_normal: 2048
+    # max_kinematic: 512
+checkpoint: checkpoint_final.pt
+state_fields:
+  - kinematic_node
+  - normal_node
+  # - normal_mises
+  # - normal_velocity
+  # - normal_acceleration
+device: cuda
+tag: video
+min_velocity: null

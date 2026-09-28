@@ -1,0 +1,90 @@
+#
+# TRAINING
+#
+training:
+  batch_size: 8
+  virtual_batch_size: -1
+  epochs: 1000 # normally 1000
+  log_iter: 1
+  val_iter: 10000
+  wandb: disabled
+  project: PLACEHOLDER
+  amp: true
+  seed: 42
+  device: cuda
+  tag: null
+
+#
+# MODEL
+#
+model:
+  _target_: src.models.platociever_clot.PlatocieverClotEntry
+  params:
+    scale: 0.5
+    normalize: false
+    mises_scale: 20.0
+    mode: signal+velocity+mesh
+    integration_order: 2
+    num_latents: 512
+    input_dim: 2 # binary node type (one hot encoded)
+    hidden_dim: 768
+    output_dim: 0 # set to 0 if no mises
+    output_dim_vec: 1
+    nhead: 2
+    num_layers: 1
+    solid_name: tetrahedron
+    ffn_dim_factor: 4
+    dropout: 0.0
+    freq_sigma: 1.0
+    learned_freqs: true
+
+#
+# DATASET
+#
+dataset:
+  _target_: src.datasets.clot_dataset.ClotEntryDataset
+  params:
+    dataset_dir: PLACEHOLDER
+    num_nodes: 2048
+    num_nodes_per_element:
+      - 512 # kinematic
+      - 1536 # normal
+    num_normal_node_queries: 2048
+    skip_first_n_states: 5
+    original_dataset: False
+    max_rotation_angle: -1 # full random rotation augmentation + reflection
+  train:
+      zero_mean_normal_nodes: false
+      split: train
+      jitter: 0.01 # kinematic noise
+      gamma: 0.1 # velocity noise correction
+      noise_level: 0.01 # normal noise
+  val:
+      zero_mean_normal_nodes: false
+      split: val
+      jitter: 0.0
+      gamma: 0.0
+      noise_level: 0.0
+
+#
+# OPTIMIZER
+#
+optimizer:
+  _target_: torch.optim.AdamW
+  params:
+    lr: 5.0e-5
+
+#
+# LOSS 
+#
+criterion:
+  _target_: src.losses.criterion.MSEClotLoss
+
+#
+# SCHEDULER
+#
+scheduler:
+  _target_: src.schedulers.schedulers.CosineWarmupScheduler
+  params:
+    warmup_epochs: 10
+    total_epochs: ${training.epochs}
