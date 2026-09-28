@@ -4,9 +4,6 @@ from torch import nn, Tensor
 from torch.nn import functional as F
 
 
-from src.models.modules.batched_graph_platoformer.platociever import (
-    KNNPlatonicPerciever,
-)
 from src.models.modules.platoformer.platociever import PlatonicPerciever
 from src.models.modules.normalize import Normalizer
 from src.utils.node import NodeType
@@ -38,7 +35,6 @@ class PlatocieverClotEntry(nn.Module):
         mode: str = "signal",
         normalize: bool = False,
         integration_order: int = 2,
-        num_knn_neighbors: int = 0,
         **kwargs,
     ):
         assert mode.lower() in list(self.__modes__)
@@ -63,17 +59,9 @@ class PlatocieverClotEntry(nn.Module):
 
         self.num_knn_neighbors = num_knn_neighbors
 
-        if num_knn_neighbors > 0:
-            self.model = KNNPlatonicPerciever(
-                input_dim_vec=self.input_dim_vec,
-                output_dim=output_dim,
-                num_neighbors=num_knn_neighbors,
-                **kwargs,
-            )
-        else:
-            self.model = PlatonicPerciever(
-                input_dim_vec=self.input_dim_vec, output_dim=output_dim, **kwargs
-            )
+        self.model = PlatonicPerciever(
+            input_dim_vec=self.input_dim_vec, output_dim=output_dim, **kwargs
+        )
 
     def _unique_radius(
         self,
